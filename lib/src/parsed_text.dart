@@ -73,6 +73,9 @@ class ParsedText extends StatelessWidget {
 
   final LayoutCallback? layoutCallback;
 
+  /// 未匹配到的区域是否响应onTap事件
+  final bool responseTapOnNonMatch;
+
   /// Creates a parsedText widget
   ///
   /// [text] paramtere should not be null and is always required.
@@ -92,6 +95,7 @@ class ParsedText extends StatelessWidget {
     this.textWidthBasis = TextWidthBasis.parent,
     this.maxLines,
     this.onTap,
+    this.responseTapOnNonMatch = false,
     this.selectable = false,
     this.regexOptions = const RegexOptions(),
     this.customEllipsis,
@@ -197,10 +201,11 @@ class ParsedText extends StatelessWidget {
       },
       onNonMatch: (String text) {
         widgets.add(TextSpan(
-          text: "$text",
-          style: this.style,
-        ));
-
+            text: "$text",
+            style: this.style,
+            recognizer: responseTapOnNonMatch && onTap != null
+                ? (TapGestureRecognizer()..onTap = () => onTap!())
+                : null));
         return '';
       },
     );
