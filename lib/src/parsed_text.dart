@@ -168,7 +168,7 @@ class ParsedText extends StatelessWidget {
             );
           } else if (mapping.renderWidget != null) {
             widget = WidgetSpan(
-              alignment: PlaceholderAlignment.middle,
+              alignment: PlaceholderAlignment.bottom,
               child: () {
                 final renderWidget = mapping.renderWidget!(
                     text: matchText, pattern: mapping.pattern!);
