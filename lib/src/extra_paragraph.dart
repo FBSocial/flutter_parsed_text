@@ -303,27 +303,27 @@ class RenderExtraParagraph extends RenderBox
   // alignments that require the baseline (baseline, aboveBaseline,
   // belowBaseline).
   bool _canComputeIntrinsics() {
-    for (final PlaceholderSpan span in _placeholderSpans) {
-      switch (span.alignment) {
-        case ui.PlaceholderAlignment.baseline:
-        case ui.PlaceholderAlignment.aboveBaseline:
-        case ui.PlaceholderAlignment.belowBaseline:
-          {
-            assert(
-              RenderObject.debugCheckingIntrinsics,
-              'Intrinsics are not available for PlaceholderAlignment.baseline, '
-              'PlaceholderAlignment.aboveBaseline, or PlaceholderAlignment.belowBaseline.',
-            );
-            return false;
-          }
-        case ui.PlaceholderAlignment.top:
-        case ui.PlaceholderAlignment.middle:
-        case ui.PlaceholderAlignment.bottom:
-          {
-            continue;
-          }
-      }
-    }
+    // for (final PlaceholderSpan span in _placeholderSpans) {
+    //   switch (span.alignment) {
+    //     case ui.PlaceholderAlignment.baseline:
+    //     case ui.PlaceholderAlignment.aboveBaseline:
+    //     case ui.PlaceholderAlignment.belowBaseline:
+    //       {
+    //         assert(
+    //           RenderObject.debugCheckingIntrinsics,
+    //           'Intrinsics are not available for PlaceholderAlignment.baseline, '
+    //           'PlaceholderAlignment.aboveBaseline, or PlaceholderAlignment.belowBaseline.',
+    //         );
+    //         return false;
+    //       }
+    //     case ui.PlaceholderAlignment.top:
+    //     case ui.PlaceholderAlignment.middle:
+    //     case ui.PlaceholderAlignment.bottom:
+    //       {
+    //         continue;
+    //       }
+    //   }
+    // }
     return true;
   }
 
