@@ -5,8 +5,10 @@ typedef LayoutCallback = void Function(TextPainter textPainter);
 /// A render object that displays a paragraph of text.
 class RenderExtraParagraph extends RenderBox
     with
-        ContainerRenderObjectMixin<RenderBox, TextParentData>,
-        RenderBoxContainerDefaultsMixin<RenderBox, TextParentData>,
+        ContainerRenderObjectMixin<RenderBox,
+            ContainerBoxParentData<RenderBox>>,
+        RenderBoxContainerDefaultsMixin<RenderBox,
+            ContainerBoxParentData<RenderBox>>,
         RelayoutWhenSystemFontsChangeMixin {
   /// Creates a paragraph render object.
   ///
@@ -412,21 +414,17 @@ class RenderExtraParagraph extends RenderBox
         childIndex < _textPainter.inlinePlaceholderBoxes!.length) {
       final TextParentData textParentData = child.parentData! as TextParentData;
       final Matrix4 transform = Matrix4.translationValues(
-        textParentData.offset.dx,
-        textParentData.offset.dy,
+        textParentData.offset?.dx ?? 0,
+        textParentData.offset?.dy ?? 0,
         0.0,
-      )..scale(
-          textParentData.scale,
-          textParentData.scale,
-          textParentData.scale,
-        );
+      );
       final bool isHit = result.addWithPaintTransform(
         transform: transform,
         position: position,
         hitTest: (BoxHitTestResult result, Offset transformed) {
           assert(() {
             final Offset manualPosition =
-                (position - textParentData.offset) / textParentData.scale!;
+                (position - (textParentData.offset ?? Offset.zero));
             return (transformed.dx - manualPosition.dx).abs() <
                     precisionErrorTolerance &&
                 (transformed.dy - manualPosition.dy).abs() <
@@ -550,12 +548,6 @@ class RenderExtraParagraph extends RenderBox
     int childIndex = 0;
     while (child != null &&
         childIndex < _textPainter.inlinePlaceholderBoxes!.length) {
-      final TextParentData textParentData = child.parentData! as TextParentData;
-      textParentData.offset = Offset(
-        _textPainter.inlinePlaceholderBoxes![childIndex].left,
-        _textPainter.inlinePlaceholderBoxes![childIndex].top,
-      );
-      textParentData.scale = _textPainter.inlinePlaceholderScales![childIndex];
       child = childAfter(child);
       childIndex += 1;
     }
@@ -716,13 +708,10 @@ class RenderExtraParagraph extends RenderBox
     // this point.
     while (child != null &&
         childIndex < _textPainter.inlinePlaceholderBoxes!.length) {
-      final TextParentData textParentData = child.parentData! as TextParentData;
-
-      final double scale = textParentData.scale!;
       context.pushTransform(
         needsCompositing,
-        offset + textParentData.offset,
-        Matrix4.diagonal3Values(scale, scale, scale),
+        offset,
+        Matrix4.zero(),
         (PaintingContext context, Offset offset) {
           context.paintChild(
             child!,
@@ -907,20 +896,6 @@ class RenderExtraParagraph extends RenderBox
             children
                 .elementAt(childIndex)
                 .isTagged(PlaceholderSpanIndexSemanticsTag(placeholderIndex))) {
-          final SemanticsNode childNode = children.elementAt(childIndex);
-          final TextParentData parentData =
-              child!.parentData! as TextParentData;
-          assert(parentData.scale != null || parentData.offset == Offset.zero);
-          // parentData.scale may be null if the render object is truncated.
-          if (parentData.scale != null) {
-            childNode.rect = Rect.fromLTWH(
-              childNode.rect.left,
-              childNode.rect.top,
-              childNode.rect.width * parentData.scale!,
-              childNode.rect.height * parentData.scale!,
-            );
-            newChildren.add(childNode);
-          }
           childIndex += 1;
         }
         child = childAfter(child!);
