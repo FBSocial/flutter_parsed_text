@@ -1,56 +1,5 @@
 part of flutter_parsed_text;
 
-/// A paragraph of rich text.
-///
-/// {@youtube 560 315 https://www.youtube.com/watch?v=rykDVh-QFfw}
-///
-/// The [RichText] widget displays text that uses multiple different styles. The
-/// text to display is described using a tree of [TextSpan] objects, each of
-/// which has an associated style that is used for that subtree. The text might
-/// break across multiple lines or might all be displayed on the same line
-/// depending on the layout constraints.
-///
-/// Text displayed in a [RichText] widget must be explicitly styled. When
-/// picking which style to use, consider using [DefaultTextStyle.of] the current
-/// [BuildContext] to provide defaults. For more details on how to style text in
-/// a [RichText] widget, see the documentation for [TextStyle].
-///
-/// Consider using the [Text] widget to integrate with the [DefaultTextStyle]
-/// automatically. When all the text uses the same style, the default constructor
-/// is less verbose. The [Text.rich] constructor allows you to style multiple
-/// spans with the default text style while still allowing specified styles per
-/// span.
-///
-/// {@tool snippet}
-///
-/// This sample demonstrates how to mix and match text with different text
-/// styles using the [RichText] Widget. It displays the text "Hello bold world,"
-/// emphasizing the word "bold" using a bold font weight.
-///
-/// ![](https://flutter.github.io/assets-for-api-docs/assets/widgets/rich_text.png)
-///
-/// ```dart
-/// RichText(
-///   text: TextSpan(
-///     text: 'Hello ',
-///     style: DefaultTextStyle.of(context).style,
-///     children: const <TextSpan>[
-///       TextSpan(text: 'bold', style: TextStyle(fontWeight: FontWeight.bold)),
-///       TextSpan(text: ' world!'),
-///     ],
-///   ),
-/// )
-/// ```
-/// {@end-tool}
-///
-/// See also:
-///
-///  * [TextStyle], which discusses how to style text.
-///  * [TextSpan], which is used to describe the text in a paragraph.
-///  * [Text], which automatically applies the ambient styles described by a
-///    [DefaultTextStyle] to a single string.
-///  * [Text.rich], a const text widget that provides similar functionality
-///    as [RichText]. [Text.rich] will inherit [TextStyle] from [DefaultTextStyle].
 class ExtraRichText extends MultiChildRenderObjectWidget {
   /// Creates a paragraph of rich text.
   ///
@@ -63,7 +12,6 @@ class ExtraRichText extends MultiChildRenderObjectWidget {
   /// The [textDirection], if null, defaults to the ambient [Directionality],
   /// which in that case must not be null.
   ExtraRichText({
-    Key? key,
     required this.text,
     this.textAlign = TextAlign.start,
     this.textDirection,
@@ -75,27 +23,14 @@ class ExtraRichText extends MultiChildRenderObjectWidget {
     this.strutStyle,
     this.textWidthBasis = TextWidthBasis.parent,
     this.textHeightBehavior,
+    this.selectionRegistrar,
+    this.selectionColor,
     this.customEllipsis,
     this.layoutCallback,
   })  : assert(maxLines == null || maxLines > 0),
-        super(key: key, children: _extractChildren(text));
-
-  // Traverses the InlineSpan tree and depth-first collects the list of
-  // child widgets that are created in WidgetSpans.
-  static List<Widget> _extractChildren(InlineSpan span) {
-    int index = 0;
-    final List<Widget> result = <Widget>[];
-    span.visitChildren((InlineSpan span) {
-      if (span is WidgetSpan) {
-        result.add(Semantics(
-          tagForChildren: PlaceholderSpanIndexSemanticsTag(index++),
-          child: span.child,
-        ));
-      }
-      return true;
-    });
-    return result;
-  }
+        assert(selectionRegistrar == null || selectionColor != null),
+        super(
+            children: WidgetSpan.extractFromInlineSpan(text, textScaleFactor));
 
   /// The text to display in this widget.
   final InlineSpan text;
@@ -156,8 +91,22 @@ class ExtraRichText extends MultiChildRenderObjectWidget {
   /// {@macro flutter.painting.textPainter.textWidthBasis}
   final TextWidthBasis textWidthBasis;
 
-  /// {@macro flutter.dart:ui.textHeightBehavior}
+  /// {@macro dart.ui.textHeightBehavior}
   final ui.TextHeightBehavior? textHeightBehavior;
+
+  /// The [SelectionRegistrar] this rich text is subscribed to.
+  ///
+  /// If this is set, [selectionColor] must be non-null.
+  final SelectionRegistrar? selectionRegistrar;
+
+  /// The color to use when painting the selection.
+  ///
+  /// This is ignored if [selectionRegistrar] is null.
+  ///
+  /// See the section on selections in the [RichText] top-level API
+  /// documentation for more details on enabling selection in [RichText]
+  /// widgets.
+  final Color? selectionColor;
 
   final String? customEllipsis;
 
@@ -178,6 +127,8 @@ class ExtraRichText extends MultiChildRenderObjectWidget {
       textWidthBasis: textWidthBasis,
       textHeightBehavior: textHeightBehavior,
       locale: locale ?? Localizations.maybeLocaleOf(context),
+      registrar: selectionRegistrar,
+      selectionColor: selectionColor,
       customEllipsis: customEllipsis,
       layoutCallback: layoutCallback,
     );
@@ -198,7 +149,9 @@ class ExtraRichText extends MultiChildRenderObjectWidget {
       ..strutStyle = strutStyle
       ..textWidthBasis = textWidthBasis
       ..textHeightBehavior = textHeightBehavior
-      ..locale = locale ?? Localizations.maybeLocaleOf(context);
+      ..locale = locale ?? Localizations.maybeLocaleOf(context)
+      ..registrar = selectionRegistrar
+      ..selectionColor = selectionColor;
   }
 
   @override
