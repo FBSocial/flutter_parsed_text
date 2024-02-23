@@ -1,6 +1,6 @@
 part of flutter_parsed_text;
 
-enum ParsedType { EMAIL, PHONE, URL, EMOJI, CUSTOM }
+enum ParsedType { EMAIL, PHONE, URL, CUSTOM }
 
 /// A MatchText class which provides a structure for [ParsedText] to handle
 /// Pattern matching and also to provide custom [Function] and custom [TextStyle].

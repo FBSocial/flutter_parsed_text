@@ -69,16 +69,6 @@ class ParsedText extends StatelessWidget {
   /// Note: Removed support for regexOptions for MatchText and now it uses global regex options.
   final RegexOptions regexOptions;
 
-  final String? customEllipsis;
-
-  final LayoutCallback? layoutCallback;
-
-  /// 未匹配到的区域是否响应onTap事件
-  final bool responseTapOnNonMatch;
-
-  ///widget对齐方式是否使用baseline
-  final bool useBaseline;
-
   /// Creates a parsedText widget
   ///
   /// [text] paramtere should not be null and is always required.
@@ -98,12 +88,8 @@ class ParsedText extends StatelessWidget {
     this.textWidthBasis = TextWidthBasis.parent,
     this.maxLines,
     this.onTap,
-    this.responseTapOnNonMatch = false,
     this.selectable = false,
     this.regexOptions = const RegexOptions(),
-    this.customEllipsis,
-    this.layoutCallback,
-    this.useBaseline = false,
   }) : super(key: key);
 
   @override
@@ -157,7 +143,6 @@ class ParsedText extends StatelessWidget {
         InlineSpan widget;
 
         if (mapping != null) {
-          final isEmoji = ParsedType.EMOJI == mapping.type;
           if (mapping.renderText != null) {
             Map<String, String> result =
                 mapping.renderText!(str: matchText, pattern: pattern);
@@ -173,24 +158,12 @@ class ParsedText extends StatelessWidget {
             );
           } else if (mapping.renderWidget != null) {
             widget = WidgetSpan(
-              baseline: useBaseline
-                  ? (isEmoji ? null : TextBaseline.alphabetic)
-                  : null,
-              alignment: useBaseline
-                  ? (isEmoji
-                      ? PlaceholderAlignment.middle
-                      : PlaceholderAlignment.baseline)
-                  : PlaceholderAlignment.bottom,
-              child: () {
-                final renderWidget = mapping.renderWidget!(
-                    text: matchText, pattern: mapping.pattern!);
-                return mapping.onTap != null
-                    ? GestureDetector(
-                        onTap: () => mapping.onTap!(matchText),
-                        child: renderWidget,
-                      )
-                    : renderWidget;
-              }(),
+              alignment: PlaceholderAlignment.middle,
+              child: GestureDetector(
+                onTap: () => mapping.onTap!(matchText),
+                child: mapping.renderWidget!(
+                    text: matchText, pattern: mapping.pattern!),
+              ),
             );
           } else {
             widget = TextSpan(
@@ -213,11 +186,10 @@ class ParsedText extends StatelessWidget {
       },
       onNonMatch: (String text) {
         widgets.add(TextSpan(
-            text: "$text",
-            style: this.style,
-            recognizer: responseTapOnNonMatch && onTap != null
-                ? (TapGestureRecognizer()..onTap = () => onTap!())
-                : null));
+          text: "$text",
+          style: this.style,
+        ));
+
         return '';
       },
     );
@@ -234,7 +206,7 @@ class ParsedText extends StatelessWidget {
       );
     }
 
-    return ExtraRichText(
+    return RichText(
       softWrap: softWrap,
       overflow: overflow,
       textScaleFactor: textScaleFactor,
@@ -243,8 +215,6 @@ class ParsedText extends StatelessWidget {
       textWidthBasis: textWidthBasis,
       textAlign: alignment,
       textDirection: textDirection,
-      customEllipsis: customEllipsis,
-      layoutCallback: layoutCallback,
       text: TextSpan(
         text: '',
         children: <InlineSpan>[...widgets],
