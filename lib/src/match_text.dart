@@ -15,6 +15,12 @@ class MatchText {
   /// Takes a custom style of [TextStyle] for the matched text widget
   TextStyle? style;
 
+  /// disable状态下的文字样式
+  TextStyle? disabledStyle;
+
+  /// 当匹配到文字结果后，判断是否需要设置为disable状态，默认是enable状态
+  bool Function(String)? disableMatch;
+
   /// A custom [Function] to handle onTap.
   Function(String)? onTap;
 
@@ -44,6 +50,8 @@ class MatchText {
     this.type = ParsedType.CUSTOM,
     this.pattern,
     this.style,
+    this.disabledStyle,
+    this.disableMatch,
     this.onTap,
     this.renderText,
     this.renderWidget,

@@ -162,14 +162,23 @@ class ParsedText extends StatelessWidget {
             Map<String, String> result =
                 mapping.renderText!(str: matchText, pattern: pattern);
 
+            final value = result['value'] ?? matchText;
+            final disabled = mapping.disableMatch?.call(value) ?? false;
+            final textStyle = disabled
+                ? (mapping.disabledStyle != null
+                    ? mapping.disabledStyle
+                    : style)
+                : (mapping.style != null ? mapping.style : style);
+
             widget = TextSpan(
               text: "${result['display']}",
-              style: mapping.style != null ? mapping.style : style,
-              recognizer: TapGestureRecognizer()
-                ..onTap = () {
-                  final value = result['value'] ?? matchText;
-                  mapping.onTap?.call(value);
-                },
+              style: textStyle,
+              recognizer: disabled
+                  ? null
+                  : (TapGestureRecognizer()
+                    ..onTap = () {
+                      mapping.onTap?.call(value);
+                    }),
             );
           } else if (mapping.renderWidget != null) {
             widget = WidgetSpan(
